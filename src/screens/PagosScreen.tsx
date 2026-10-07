@@ -79,13 +79,13 @@ export const PagosScreen: React.FC = () => {
           <div className="p-4 rounded-xl bg-[#FEF7EE] border border-[#F4A340]/40 space-y-1">
             <div className="flex items-center gap-1.5 text-xs font-bold text-[#C97E25]">
               <Clock className="w-4 h-4" />
-              <span>Pendientes</span>
+              <span>Pagos pendientes</span>
             </div>
             <div className="text-2xl sm:text-3xl font-extrabold text-[#202522] num-tabular">
               {pendingPaymentsCount}
             </div>
             <div className="text-[11px] text-[#C97E25] font-semibold num-tabular">
-              Resta: {formatCurrency(pendingPaymentsAmount, preferences.currency)}
+              Total por pagar: {formatCurrency(pendingPaymentsAmount, preferences.currency)}
             </div>
           </div>
         </div>

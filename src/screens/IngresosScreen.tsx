@@ -178,7 +178,10 @@ export const IngresosScreen: React.FC = () => {
               <span>Ingresos guardados correctamente</span>
             </>
           ) : (
-            <span>Guardar ingresos</span>
+            <>
+              <Check className="w-4 h-4 stroke-[2.5]" />
+              <span>Guardar ingresos</span>
+            </>
           )}
         </button>
       </div>
