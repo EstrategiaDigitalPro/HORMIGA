@@ -74,6 +74,8 @@ export const HistorialScreen: React.FC = () => {
     }
   }, [allMonths, selectedKey, activeHormiga, preferences.currency]);
 
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-200">
       {/* Header */}
@@ -85,7 +87,9 @@ export const HistorialScreen: React.FC = () => {
           Historial de meses
         </h1>
         <p className="text-xs sm:text-sm text-[#68716B] mt-0.5">
-          Compara tu evolución en ingresos, ahorros y gastos hormiga en el tiempo
+          {firstName
+            ? `${firstName}, compara tu evolución en ingresos, ahorros y gastos hormiga en el tiempo.`
+            : 'Compara tu evolución en ingresos, ahorros y gastos hormiga en el tiempo.'}
         </p>
       </div>
 

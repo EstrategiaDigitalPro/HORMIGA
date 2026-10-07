@@ -18,6 +18,8 @@ export const AnalisisScreen: React.FC = () => {
     availableRemaining,
   } = useFinance();
 
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
+
   // Aggregate spending by category
   const categorySpending: CategorySpendingItem[] = useMemo(() => {
     const map: Record<string, number> = {};
@@ -156,7 +158,9 @@ export const AnalisisScreen: React.FC = () => {
             Distribución del gasto por categoría
           </h3>
           <p className="text-xs text-[#68716B]">
-            ¿En qué rubros se está yendo tu dinero este mes?
+            {firstName
+              ? `${firstName}, ¿en qué rubros se está yendo tu dinero este mes?`
+              : '¿En qué rubros se está yendo tu dinero este mes?'}
           </p>
         </div>
 

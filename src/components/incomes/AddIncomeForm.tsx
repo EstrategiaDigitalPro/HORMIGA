@@ -75,10 +75,14 @@ export const AddIncomeForm: React.FC<AddIncomeFormProps> = ({ onAdd, onCancel })
             type="number"
             inputMode="decimal"
             step="any"
-            placeholder="Ej: 850000"
+            placeholder="0"
             min="1"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+            onFocus={(e) => {
+              if (e.target.value === '0') setAmount('');
+              else e.target.select();
+            }}
             className="w-full min-h-[46px] px-3.5 py-2.5 text-xs sm:text-sm font-semibold bg-white border border-[#E8ECE6] rounded-xl focus:border-[#176B45] focus:outline-hidden num-tabular"
             required
           />

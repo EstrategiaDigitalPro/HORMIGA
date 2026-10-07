@@ -23,6 +23,20 @@ export const CategoryBudgetRow: React.FC<CategoryBudgetRowProps> = ({
   const isOver = spent > planned;
   const isWarning = !isOver && percentUsed >= 75;
 
+  const [valStr, setValStr] = React.useState<string>(
+    category.plannedAmount === 0 ? '' : String(category.plannedAmount)
+  );
+
+  React.useEffect(() => {
+    setValStr(category.plannedAmount === 0 ? '' : String(category.plannedAmount));
+  }, [category.plannedAmount]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setValStr(raw);
+    onAmountChange(category.id, raw === '' ? '0' : raw);
+  };
+
   return (
     <div className="p-4 sm:p-5 space-y-3 hover:bg-[#F7F8F6]/40 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -76,8 +90,17 @@ export const CategoryBudgetRow: React.FC<CategoryBudgetRowProps> = ({
               type="number"
               inputMode="decimal"
               step="any"
-              value={category.plannedAmount}
-              onChange={(e) => onAmountChange(category.id, e.target.value)}
+              placeholder="0"
+              value={valStr}
+              onChange={handleChange}
+              onFocus={(e) => {
+                if (e.target.value === '0') {
+                  setValStr('');
+                  onAmountChange(category.id, '0');
+                } else {
+                  e.target.select();
+                }
+              }}
               className="w-24 sm:w-28 text-right font-extrabold text-[#202522] bg-transparent focus:outline-hidden num-tabular text-sm"
               aria-label={`Tope para ${category.name}`}
             />

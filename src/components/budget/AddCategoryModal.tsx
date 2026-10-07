@@ -66,10 +66,14 @@ export const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
               type="number"
               inputMode="decimal"
               step="any"
-              placeholder="Ej: 50000"
+              placeholder="0"
               min="1"
               value={newCatAmount}
               onChange={(e) => setNewCatAmount(e.target.value)}
+              onFocus={(e) => {
+                if (e.target.value === '0') setNewCatAmount('');
+                else e.target.select();
+              }}
               className="w-full text-base font-bold text-[#202522] bg-transparent focus:outline-hidden num-tabular"
               required
             />

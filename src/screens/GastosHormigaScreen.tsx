@@ -50,6 +50,8 @@ export const GastosHormigaScreen: React.FC = () => {
     };
   }).sort((a, b) => b.amount - a.amount);
 
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-200">
       {/* Header */}
@@ -61,7 +63,9 @@ export const GastosHormigaScreen: React.FC = () => {
           Gastos hormiga
         </h1>
         <p className="text-xs sm:text-sm text-[#68716B] mt-0.5">
-          Descubre exactamente cuánto suman tus microgastos cotidianos y compras impulsivas
+          {firstName
+            ? `${firstName}, descubre exactamente cuánto suman tus microgastos cotidianos y compras impulsivas.`
+            : 'Descubre exactamente cuánto suman tus microgastos cotidianos y compras impulsivas.'}
         </p>
       </div>
 

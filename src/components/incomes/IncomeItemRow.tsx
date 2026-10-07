@@ -17,6 +17,20 @@ export const IncomeItemRow: React.FC<IncomeItemRowProps> = ({
   onAmountChange,
   onDelete,
 }) => {
+  const [valStr, setValStr] = React.useState<string>(
+    income.amount === 0 ? '' : String(income.amount)
+  );
+
+  React.useEffect(() => {
+    setValStr(income.amount === 0 ? '' : String(income.amount));
+  }, [income.amount]);
+
+  const handleAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setValStr(raw);
+    onAmountChange(income.id, raw === '' ? '0' : raw);
+  };
+
   const categoryLabels: Record<string, string> = {
     salario: 'Salario',
     negocio: 'Negocio',
@@ -52,8 +66,17 @@ export const IncomeItemRow: React.FC<IncomeItemRowProps> = ({
           <input
             type="number"
             inputMode="decimal"
-            value={income.amount}
-            onChange={(e) => onAmountChange(income.id, e.target.value)}
+            placeholder="0"
+            value={valStr}
+            onChange={handleAmount}
+            onFocus={(e) => {
+              if (e.target.value === '0') {
+                setValStr('');
+                onAmountChange(income.id, '0');
+              } else {
+                e.target.select();
+              }
+            }}
             className="w-28 text-right font-extrabold text-[#202522] bg-transparent focus:outline-hidden num-tabular text-sm"
           />
         </div>

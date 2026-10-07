@@ -29,6 +29,8 @@ export const PagosScreen: React.FC = () => {
     return true;
   });
 
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-200">
       {/* Header */}
@@ -40,7 +42,9 @@ export const PagosScreen: React.FC = () => {
           Pagos
         </h1>
         <p className="text-xs sm:text-sm text-[#68716B] mt-0.5">
-          Controla tus obligaciones fijas y servicios pendientes del mes
+          {firstName
+            ? `${firstName}, controla tus obligaciones fijas y servicios pendientes del mes.`
+            : 'Controla tus obligaciones fijas y servicios pendientes del mes.'}
         </p>
       </div>
 

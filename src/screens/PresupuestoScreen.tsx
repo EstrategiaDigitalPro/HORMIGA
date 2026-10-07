@@ -60,6 +60,8 @@ export const PresupuestoScreen: React.FC = () => {
     }, 900);
   };
 
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-200">
       {/* Header */}
@@ -71,7 +73,9 @@ export const PresupuestoScreen: React.FC = () => {
           Presupuesto
         </h1>
         <p className="text-xs sm:text-sm text-[#68716B] mt-0.5">
-          Planifica cuánto deseas gastar por categoría para no salirte de tus metas
+          {firstName
+            ? `${firstName}, planifica cuánto deseas gastar por categoría para no salirte de tus metas.`
+            : 'Planifica cuánto deseas gastar por categoría para no salirte de tus metas.'}
         </p>
       </div>
 

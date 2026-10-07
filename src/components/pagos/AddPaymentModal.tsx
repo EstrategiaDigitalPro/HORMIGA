@@ -71,9 +71,13 @@ export const AddPaymentModal: React.FC<AddPaymentModalProps> = ({
                 inputMode="decimal"
                 step="any"
                 min="1"
-                placeholder="Ej: 25000"
+                placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                onFocus={(e) => {
+                  if (e.target.value === '0') setAmount('');
+                  else e.target.select();
+                }}
                 className="w-full text-base font-bold text-[#202522] bg-transparent focus:outline-hidden num-tabular"
                 required
               />

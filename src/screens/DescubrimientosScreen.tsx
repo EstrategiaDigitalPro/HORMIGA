@@ -5,7 +5,8 @@ import { ScreenHeader } from '../components/common/ScreenHeader';
 import { DiscoveriesList } from '../components/discoveries/DiscoveriesList';
 
 export const DescubrimientosScreen: React.FC = () => {
-  const { monthData } = useFinance();
+  const { monthData, preferences } = useFinance();
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-200">
@@ -22,7 +23,9 @@ export const DescubrimientosScreen: React.FC = () => {
           Descubrimientos
         </h1>
         <p className="text-xs sm:text-sm text-[#68716B]">
-          Conclusiones y patrones claros detectados por HORMIGA para ayudarte a tomar mejores decisiones
+          {firstName
+            ? `${firstName}, aquí tienes conclusiones y patrones detectados por HORMIGA para ayudarte a tomar mejores decisiones.`
+            : 'Conclusiones y patrones claros detectados por HORMIGA para ayudarte a tomar mejores decisiones.'}
         </p>
       </div>
 

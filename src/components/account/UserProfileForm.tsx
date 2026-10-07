@@ -51,7 +51,7 @@ export const UserProfileForm: React.FC<UserProfileFormProps> = ({ onSaved }) => 
             type="text"
             inputMode="text"
             autoCapitalize="words"
-            placeholder="Ej: Camila Morales"
+            placeholder="Escribe tu nombre"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full min-h-[46px] px-3.5 py-2.5 text-sm bg-white border border-[#E8ECE6] rounded-xl focus:border-[#176B45] focus:outline-hidden"

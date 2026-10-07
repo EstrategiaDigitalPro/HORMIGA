@@ -12,7 +12,7 @@ import { formatExactDateSpanish } from '../utils/currency';
 
 export const MiMesScreen: React.FC = () => {
   const { openRegisterModal, preferences } = useFinance();
-  const firstName = preferences.name?.trim().split(' ')[0] || 'Camila';
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
   const exactDate = formatExactDateSpanish();
 
   return (
@@ -30,7 +30,9 @@ export const MiMesScreen: React.FC = () => {
             <span className="capitalize">{exactDate}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#202522] tracking-tight mt-0.5">
-            ¿Cómo vas con tu dinero este mes, {firstName}?
+            {firstName
+              ? `¿Cómo vas con tu dinero este mes, ${firstName}?`
+              : '¿Cómo vas con tu dinero este mes?'}
           </h1>
         </div>
 

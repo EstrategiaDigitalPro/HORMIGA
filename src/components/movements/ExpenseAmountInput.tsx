@@ -38,8 +38,12 @@ export const ExpenseAmountInput: React.FC<ExpenseAmountInputProps> = ({
           step="any"
           min="1"
           placeholder="0"
-          value={rawAmount}
+          value={rawAmount === '0' ? '' : rawAmount}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={(e) => {
+            if (e.target.value === '0') onChange('');
+            else e.target.select();
+          }}
           className="w-full max-w-[260px] text-center text-4xl sm:text-5xl font-extrabold text-[#202522] tracking-tight bg-transparent focus:outline-hidden num-tabular border-b-2 border-transparent focus:border-[#176B45] pb-1 transition-colors"
           required
         />

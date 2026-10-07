@@ -21,11 +21,12 @@ export const SeparateSavingsModal: React.FC<SeparateSavingsModalProps> = ({
   currencySymbol,
   onConfirm,
 }) => {
-  const [separateInput, setSeparateInput] = useState<string>(String(monthlyTarget));
+  const [separateInput, setSeparateInput] = useState<string>('');
 
   useEffect(() => {
     if (isOpen) {
-      setSeparateInput(String(currentSeparated || monthlyTarget));
+      const initial = currentSeparated || monthlyTarget;
+      setSeparateInput(initial > 0 ? String(initial) : '');
     }
   }, [isOpen, currentSeparated, monthlyTarget]);
 
@@ -52,8 +53,13 @@ export const SeparateSavingsModal: React.FC<SeparateSavingsModalProps> = ({
             <span className="text-sm font-bold text-[#68716B]">{currencySymbol}</span>
             <input
               type="number"
+              placeholder="0"
               value={separateInput}
               onChange={(e) => setSeparateInput(e.target.value)}
+              onFocus={(e) => {
+                if (e.target.value === '0') setSeparateInput('');
+                else e.target.select();
+              }}
               className="w-full text-xl font-extrabold text-[#202522] bg-transparent focus:outline-hidden num-tabular"
               autoFocus
             />

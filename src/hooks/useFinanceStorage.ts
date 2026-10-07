@@ -7,9 +7,9 @@ import {
 } from '../utils/initialData';
 
 const STORAGE_KEYS = {
-  PREFERENCES: 'hormiga_user_prefs_v1',
-  CURRENT_MONTH: 'hormiga_month_2026_10_v1',
-  PAST_MONTHS: 'hormiga_past_months_v1',
+  PREFERENCES: 'hormiga_user_prefs_v2',
+  CURRENT_MONTH: 'hormiga_month_2026_10_v2',
+  PAST_MONTHS: 'hormiga_past_months_v2',
 };
 
 export function useFinanceStorage() {

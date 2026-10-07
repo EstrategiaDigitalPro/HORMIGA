@@ -62,7 +62,7 @@ export function calculateGastosHormigaBudget(budgets: CategoryBudget[]): number 
   const hormigaCat = budgets.find(
     (b) => b.isHormigaCategory || b.id === 'gastos_hormiga' || b.name.toLowerCase().includes('hormiga')
   );
-  return hormigaCat ? hormigaCat.plannedAmount : 120000;
+  return hormigaCat ? hormigaCat.plannedAmount : 0;
 }
 
 /**

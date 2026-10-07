@@ -12,24 +12,26 @@ export const UserGreetingBanner: React.FC = () => {
     setUserNameInput(preferences.name || '');
   }, [preferences.name]);
 
-  const handleNameBlur = () => {
+  const handleSaveName = () => {
     const trimmed = userNameInput.trim();
     if (trimmed) {
       updatePreferences({ name: trimmed });
     } else {
-      setUserNameInput(preferences.name || 'Camila');
-      updatePreferences({ name: preferences.name || 'Camila' });
+      setUserNameInput(preferences.name || '');
     }
     setIsEditingUserName(false);
   };
 
   const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleNameBlur();
+      handleSaveName();
+    } else if (e.key === 'Escape') {
+      setUserNameInput(preferences.name || '');
+      setIsEditingUserName(false);
     }
   };
 
-  const firstName = preferences.name?.trim().split(' ')[0] || 'Camila';
+  const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
   const exactDate = formatExactDateSpanish();
 
   return (
@@ -60,18 +62,20 @@ export const UserGreetingBanner: React.FC = () => {
                   type="text"
                   value={userNameInput}
                   onChange={(e) => setUserNameInput(e.target.value)}
-                  onBlur={handleNameBlur}
+                  onBlur={handleSaveName}
                   onKeyDown={handleNameKeyDown}
                   placeholder="Escribe tu nombre..."
                   autoFocus
-                  className="text-xl sm:text-2xl font-extrabold text-[#176B45] bg-[#EBF4EF]/80 px-2 py-0.5 rounded-xl border border-[#176B45] focus:outline-hidden min-w-[140px] max-w-[240px]"
+                  className="text-xl sm:text-2xl font-extrabold text-[#176B45] bg-[#EBF4EF]/80 px-2.5 py-0.5 rounded-xl border-2 border-[#176B45] focus:outline-hidden min-w-[150px] max-w-[260px]"
                 />
                 <button
-                  onClick={handleNameBlur}
-                  className="p-1.5 bg-[#176B45] text-white rounded-lg hover:bg-[#125537] cursor-pointer"
+                  type="button"
+                  onClick={handleSaveName}
+                  className="p-1.5 bg-[#176B45] hover:bg-[#125537] text-white rounded-lg transition-colors cursor-pointer shadow-xs"
                   title="Guardar nombre"
+                  aria-label="Guardar nombre"
                 >
-                  <Check className="w-3.5 h-3.5" />
+                  <Check className="w-4 h-4" />
                 </button>
               </div>
             ) : (
@@ -81,7 +85,7 @@ export const UserGreetingBanner: React.FC = () => {
                 className="inline-flex items-center gap-1.5 text-xl sm:text-2xl font-extrabold text-[#176B45] hover:text-[#125537] border-b-2 border-dashed border-[#176B45]/40 hover:border-[#176B45] transition-all px-1 py-0.5 cursor-pointer rounded-sm group text-left"
                 title="Haz clic para escribir o cambiar tu nombre"
               >
-                <span>{preferences.name || 'Camila'}</span>
+                <span>{preferences.name || 'Escribe tu nombre'}</span>
                 <Edit3 className="w-3.5 h-3.5 text-[#176B45]/60 group-hover:text-[#176B45] transition-colors" />
               </button>
             )}
@@ -93,12 +97,18 @@ export const UserGreetingBanner: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 self-start md:self-auto bg-[#FEF7EE] px-3.5 py-2 rounded-xl border border-[#F4A340]/40 text-xs text-[#202522] shadow-2xs">
-        <Sparkles className="w-4 h-4 text-[#F4A340] shrink-0" />
+      {/* Button: [Nombre], soy HORMIGA tu nueva amiga */}
+      <button
+        type="button"
+        onClick={() => setIsEditingUserName(true)}
+        className="flex items-center gap-2 self-start md:self-auto bg-[#FEF7EE] hover:bg-[#FDF2E2] active:scale-98 px-3.5 py-2 rounded-xl border border-[#F4A340]/40 text-xs text-[#202522] shadow-2xs transition-all cursor-pointer group"
+        title="Toca para cambiar tu nombre en cualquier momento"
+      >
+        <Sparkles className="w-4 h-4 text-[#F4A340] shrink-0 group-hover:rotate-12 transition-transform" />
         <span className="font-semibold text-[#202522]">
-          {firstName}, soy HORMIGA tu nueva mejor amiga
+          {firstName ? `${firstName}, soy HORMIGA tu nueva amiga` : '¡Soy HORMIGA tu nueva amiga!'}
         </span>
-      </div>
+      </button>
     </div>
   );
 };

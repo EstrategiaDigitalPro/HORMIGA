@@ -15,6 +15,7 @@ import { DescubrimientosScreen } from './screens/DescubrimientosScreen';
 import { HistorialScreen } from './screens/HistorialScreen';
 import { MiCuentaScreen } from './screens/MiCuentaScreen';
 
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { OfflineBanner } from './components/common/OfflineBanner';
 
 const MainContent: React.FC = () => {
@@ -57,7 +58,9 @@ const MainContent: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-8 pb-28 lg:pb-12">
-        {renderScreen()}
+        <ErrorBoundary>
+          {renderScreen()}
+        </ErrorBoundary>
       </main>
 
       {/* Quick Register Expense Modal */}

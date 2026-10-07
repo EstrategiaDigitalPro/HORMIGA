@@ -9,11 +9,15 @@ export const MonthlyHealthBadge: React.FC = () => {
     budgetStatusText,
     budgetUsedPercent,
     availableRemaining,
+    totalIncome,
+    totalSpent,
     preferences,
   } = useFinance();
 
   const firstName = preferences.name?.trim().split(' ')[0] || '';
   const greetingName = firstName ? `${firstName}, ` : '';
+
+  const isInitialEmpty = totalIncome === 0 && totalSpent === 0;
 
   const configs = {
     good: {
@@ -21,8 +25,12 @@ export const MonthlyHealthBadge: React.FC = () => {
       bgColor: 'bg-[#EBF4EF]/80',
       textColor: 'text-[#176B45]',
       icon: CheckCircle2,
-      title: `${greetingName}vas bien con tu presupuesto`,
-      detail: `Tienes ${formatCurrency(availableRemaining, preferences.currency)} disponibles para lo que resta de mes. Mantén este ritmo.`,
+      title: isInitialEmpty
+        ? `${greetingName}todo listo para comenzar tu mes`
+        : `${greetingName}vas bien con tu presupuesto`,
+      detail: isInitialEmpty
+        ? 'Empieza registrando tus ingresos del mes o configurando tu presupuesto para llevar el control de tus finanzas.'
+        : `Tienes ${formatCurrency(availableRemaining, preferences.currency)} disponibles para lo que resta de mes. Mantén este ritmo.`,
     },
     warning: {
       borderColor: 'border-[#F4A340]/40',
