@@ -1,0 +1,8 @@
+{
+  "name": "Remix HORMIGA - Finanzas Personales 5 octubre",
+  "description": "Control financiero mensual, ahorro intencional, pagos y detección de gastos hormiga.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
