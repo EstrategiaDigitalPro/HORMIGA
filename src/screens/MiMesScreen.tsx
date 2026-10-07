@@ -38,7 +38,7 @@ export const MiMesScreen: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={openRegisterModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#176B45] hover:bg-[#125537] text-white text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#F4A340] hover:bg-[#E08F2D] text-[#202522] text-sm font-semibold rounded-xl shadow-xs transition-all cursor-pointer w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Registrar gasto</span>

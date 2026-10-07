@@ -166,10 +166,10 @@ export const RegisterExpenseModal: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting || !name.trim() || numericAmount <= 0}
-            className={`w-full min-h-[50px] py-3.5 text-sm font-semibold rounded-xl text-white transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs ${
+            className={`w-full min-h-[50px] py-3.5 text-sm font-semibold rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs ${
               name.trim() && numericAmount > 0 && !isSubmitting
-                ? 'bg-[#176B45] hover:bg-[#125537] active:scale-[0.99]'
-                : 'bg-[#68716B]/40 cursor-not-allowed'
+                ? 'bg-[#F4A340] hover:bg-[#E08F2D] text-[#202522] active:scale-[0.99]'
+                : 'bg-[#68716B]/40 text-white cursor-not-allowed'
             }`}
           >
             {isSubmitting ? (

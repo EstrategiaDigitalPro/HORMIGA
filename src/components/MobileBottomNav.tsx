@@ -39,7 +39,7 @@ export const MobileBottomNav: React.FC = () => {
         <div className="flex items-center justify-center">
           <button
             onClick={openRegisterModal}
-            className="flex items-center justify-center w-12 h-12 -mt-3 rounded-full bg-[#176B45] text-white shadow-md shadow-[#176B45]/25 border-2 border-white hover:bg-[#125537] active:scale-95 transition-transform cursor-pointer"
+            className="flex items-center justify-center w-12 h-12 -mt-3 rounded-full bg-[#F4A340] text-[#202522] shadow-md shadow-[#F4A340]/25 border-2 border-white hover:bg-[#E08F2D] active:scale-95 transition-transform cursor-pointer"
             aria-label="Registrar nuevo gasto"
             title="Registrar gasto"
           >

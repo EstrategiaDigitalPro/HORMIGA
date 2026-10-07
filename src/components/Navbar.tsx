@@ -72,7 +72,7 @@ export const Navbar: React.FC = () => {
           {/* Primary Action Button */}
           <button
             onClick={openRegisterModal}
-            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-[#176B45] hover:bg-[#125537] active:scale-95 transition-all rounded-xl shadow-xs cursor-pointer whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-[#202522] bg-[#F4A340] hover:bg-[#E08F2D] active:scale-95 transition-all rounded-xl shadow-xs cursor-pointer whitespace-nowrap"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Registrar gasto</span>

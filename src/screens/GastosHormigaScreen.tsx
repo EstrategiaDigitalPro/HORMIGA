@@ -225,7 +225,7 @@ export const GastosHormigaScreen: React.FC = () => {
         <button
           type="button"
           onClick={openRegisterModal}
-          className="w-full min-h-[50px] py-3.5 bg-[#176B45] hover:bg-[#125537] text-white text-sm font-semibold rounded-xl shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full min-h-[50px] py-3.5 bg-[#F4A340] hover:bg-[#E08F2D] text-[#202522] text-sm font-semibold rounded-xl shadow-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>Registrar nuevo gasto hormiga</span>
