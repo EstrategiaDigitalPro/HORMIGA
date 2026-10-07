@@ -18,10 +18,15 @@ export const CategoryBudgetRow: React.FC<CategoryBudgetRowProps> = ({
   currencySymbol,
   onAmountChange,
 }) => {
-  const planned = category.plannedAmount || 1;
-  const percentUsed = Math.round((spent / planned) * 100);
+  const planned = Number(category.plannedAmount) || 0;
+  const rawPercentUsed = planned > 0 ? (spent / planned) * 100 : (spent > 0 ? 100 : 0);
+  const percentUsed = Math.min(100, Math.max(0, rawPercentUsed));
   const isOver = spent > planned;
-  const isWarning = !isOver && percentUsed >= 75;
+  const isWarning = !isOver && planned > 0 && rawPercentUsed >= 75;
+
+  const formattedPercent = Number.isInteger(rawPercentUsed)
+    ? `${rawPercentUsed}%`
+    : `${rawPercentUsed.toFixed(2).replace('.', ',')}%`;
 
   const [valStr, setValStr] = React.useState<string>(
     category.plannedAmount === 0 ? '' : String(category.plannedAmount)
@@ -71,7 +76,7 @@ export const CategoryBudgetRow: React.FC<CategoryBudgetRowProps> = ({
                     : 'text-[#176B45]'
                 }
               >
-                {percentUsed}% usado
+                {formattedPercent} usado
               </span>
             </div>
           </div>

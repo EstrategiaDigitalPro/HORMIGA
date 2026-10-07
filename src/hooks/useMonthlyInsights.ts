@@ -2,37 +2,36 @@ import { useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
 
 export function useMonthlyInsights() {
-  const { monthData, totalSpent, savingsSeparated, savingsMonthlyTarget, gastosHormigaSpent } =
-    useFinance();
+  const {
+    monthData,
+    totalSpent,
+    savingsSeparated,
+    savingsMonthlyTarget,
+    gastosHormigaSpent,
+    categoriesMetrics,
+  } = useFinance();
 
   return useMemo(() => {
-    // 1. Largest spending category
-    const categoryTotals: Record<string, number> = {};
-    monthData.expenses.forEach((e) => {
-      const key = e.isHormiga ? 'Gastos hormiga' : e.category;
-      categoryTotals[key] = (categoryTotals[key] || 0) + e.amount;
-    });
+    // 1. Largest spending category from central metrics
+    const sortedCategories = [...categoriesMetrics]
+      .filter((m) => m.spent > 0)
+      .sort((a, b) => b.spent - a.spent);
 
-    const sortedCategories = Object.entries(categoryTotals).sort(
-      ([, a], [, b]) => b - a
-    );
-    const topCategory = sortedCategories[0] || ['Alimentación', 0];
-    const topCatName = topCategory[0];
-    const topCatAmount = topCategory[1];
+    const topCategory = sortedCategories[0];
+    const topCatName = topCategory ? topCategory.name : 'Alimentación';
+    const topCatAmount = topCategory ? topCategory.spent : 0;
     const topCatPercent = totalSpent > 0 ? Math.round((topCatAmount / totalSpent) * 100) : 0;
 
-    // 2. Budget exceeded check
-    const topExceeded = monthData.budgets
-      .map((b) => {
-        const spent =
-          categoryTotals[b.name] ||
-          (b.isHormigaCategory ? categoryTotals['Gastos hormiga'] : 0) ||
-          0;
-        const planned = b.plannedAmount || 1;
-        const pct = Math.round((spent / planned) * 100);
-        return { ...b, spent, planned, pct, diff: spent - planned };
-      })
-      .filter((b) => b.diff > 0)
+    // 2. Budget exceeded check (sin usar || 1 ni valores anómalos)
+    const topExceeded = categoriesMetrics
+      .filter((m) => m.isOver)
+      .map((m) => ({
+        ...m,
+        spent: m.spent,
+        planned: m.planned,
+        pct: Math.round(m.percentUsed),
+        diff: m.spent - m.planned,
+      }))
       .sort((a, b) => b.diff - a.diff)[0];
 
     // 3. Savings percent
@@ -56,13 +55,13 @@ export function useMonthlyInsights() {
       6: { name: 'sábados', count: 0, total: 0 },
     };
 
-    monthData.expenses.forEach((e) => {
+    (monthData.expenses || []).forEach((e) => {
       if (e.isHormiga && e.date) {
         const d = new Date(`${e.date}T12:00:00Z`);
         const dayIdx = d.getUTCDay();
         if (daysMap[dayIdx]) {
           daysMap[dayIdx].count += 1;
-          daysMap[dayIdx].total += e.amount;
+          daysMap[dayIdx].total += Number(e.amount) || 0;
         }
       }
     });
@@ -79,5 +78,12 @@ export function useMonthlyInsights() {
       halfHormigaAnnual,
       peakDay,
     };
-  }, [monthData, totalSpent, savingsSeparated, savingsMonthlyTarget, gastosHormigaSpent]);
+  }, [
+    monthData,
+    totalSpent,
+    savingsSeparated,
+    savingsMonthlyTarget,
+    gastosHormigaSpent,
+    categoriesMetrics,
+  ]);
 }

@@ -16,38 +16,26 @@ export const AnalisisScreen: React.FC = () => {
     totalSpent,
     totalBudget,
     availableRemaining,
+    categoriesMetrics,
+    categoryMetricsMap,
   } = useFinance();
 
   const firstName = preferences.name?.trim().split(' ')[0] || preferences.name?.trim() || '';
 
-  // Aggregate spending by category
+  // Aggregate spending by category from the central source of truth
   const categorySpending: CategorySpendingItem[] = useMemo(() => {
-    const map: Record<string, number> = {};
-    monthData.expenses.forEach((e) => {
-      const cat = e.isHormiga ? 'Gastos hormiga' : e.category;
-      map[cat] = (map[cat] || 0) + e.amount;
-    });
-
-    const entries = Object.entries(map).map(([name, amount]) => {
-      const budgetItem = monthData.budgets.find(
-        (b) => b.name === name || (name === 'Gastos hormiga' && b.isHormigaCategory)
-      );
-      const planned = budgetItem?.plannedAmount || 0;
-      const percentageOfTotalSpent = totalSpent > 0 ? (amount / totalSpent) * 100 : 0;
-      const percentageOfPlanned = planned > 0 ? (amount / planned) * 100 : 0;
-
-      return {
-        name,
-        actual: amount,
-        planned,
-        percentageOfTotalSpent,
-        percentageOfPlanned,
-        color: budgetItem?.color || (name === 'Gastos hormiga' ? '#F4A340' : '#176B45'),
-      };
-    });
-
-    return entries.sort((a, b) => b.actual - a.actual);
-  }, [monthData.expenses, monthData.budgets, totalSpent]);
+    return categoriesMetrics
+      .filter((m) => m.spent > 0)
+      .map((m) => ({
+        name: m.name,
+        actual: m.spent,
+        planned: m.planned,
+        percentageOfTotalSpent: totalSpent > 0 ? (m.spent / totalSpent) * 100 : 0,
+        percentageOfPlanned: m.percentUsed,
+        color: m.color || (m.isHormigaCategory ? '#F4A340' : '#176B45'),
+      }))
+      .sort((a, b) => b.actual - a.actual);
+  }, [categoriesMetrics, totalSpent]);
 
   const headerRight = (
     <div className="flex items-center gap-2">
@@ -176,6 +164,7 @@ export const AnalisisScreen: React.FC = () => {
         budgets={monthData.budgets}
         categorySpending={categorySpending}
         currencyCode={preferences.currency}
+        categoryMetricsMap={categoryMetricsMap}
       />
 
       {/* Discovery CTA */}

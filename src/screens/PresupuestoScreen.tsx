@@ -14,7 +14,8 @@ export const PresupuestoScreen: React.FC = () => {
     monthData,
     setCurrentScreen,
     preferences,
-    updateCategoryBudget,
+    categoryMetricsMap,
+    updateAllBudgets,
     addCategoryBudget,
   } = useFinance();
 
@@ -25,17 +26,6 @@ export const PresupuestoScreen: React.FC = () => {
   React.useEffect(() => {
     setBudgetsList(monthData.budgets);
   }, [monthData.budgets]);
-
-  // Map category spent from expenses
-  const categorySpentMap = React.useMemo(() => {
-    const map: Record<string, number> = {};
-    monthData.expenses.forEach((e) => {
-      const catKey = e.isHormiga ? 'Gastos hormiga' : e.category;
-      map[catKey] = (map[catKey] || 0) + e.amount;
-      map[e.category] = (map[e.category] || 0) + e.amount;
-    });
-    return map;
-  }, [monthData.expenses]);
 
   const totalPlanned = budgetsList.reduce(
     (sum, b) => sum + (parseFloat(String(b.plannedAmount)) || 0),
@@ -50,9 +40,7 @@ export const PresupuestoScreen: React.FC = () => {
   };
 
   const handleSaveBudget = () => {
-    budgetsList.forEach((b) => {
-      updateCategoryBudget(b.id, b.plannedAmount);
-    });
+    updateAllBudgets(budgetsList);
     setSavedSuccess(true);
     setTimeout(() => {
       setSavedSuccess(false);
@@ -130,10 +118,8 @@ export const PresupuestoScreen: React.FC = () => {
         ) : (
           <div className="divide-y divide-[#E8ECE6]">
             {budgetsList.map((cat) => {
-              const spent =
-                categorySpentMap[cat.name] ||
-                (cat.isHormigaCategory ? categorySpentMap['Gastos hormiga'] : 0) ||
-                0;
+              const metric = categoryMetricsMap[cat.name] || categoryMetricsMap[cat.id];
+              const spent = metric ? metric.spent : 0;
 
               return (
                 <CategoryBudgetRow

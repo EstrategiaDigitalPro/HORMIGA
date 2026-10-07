@@ -71,6 +71,45 @@ export interface ExpenseTransaction {
   hormigaType?: HormigaType;
   date: string; // YYYY-MM-DD
   createdAt: string; // ISO
+  paymentId?: string; // Linked recurring payment ID if generated from a payment
+}
+
+export interface CategoryFinancialMetrics {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isHormigaCategory?: boolean;
+  planned: number; // Límite mensual configurado
+  spent: number; // Suma de los gastos reales PAGADOS de esa categoría
+  pending: number; // Suma de pagos pendientes de esa categoría (NO sumado a gastado)
+  available: number; // planned - spent
+  percentUsed: number; // (spent / planned) * 100 si planned > 0, o 0
+  isOver: boolean; // spent > planned
+  isWarning: boolean; // !isOver && planned > 0 && percentUsed >= 75
+  status: 'good' | 'warning' | 'over'; // 'good' = En control, 'warning' = En alerta, 'over' = Excedido
+  statusLabel: string; // 'En control' | 'En alerta' | 'Excedido'
+}
+
+export interface CentralFinancialSummary {
+  totalIncome: number;
+  savingsSeparated: number;
+  savingsMonthlyTarget: number;
+  totalSpent: number;
+  pendingPaymentsAmount: number;
+  completedPaymentsCount: number;
+  pendingPaymentsCount: number;
+  totalBudget: number;
+  budgetUsedPercent: number;
+  availableRemaining: number;
+  categoriesMetrics: CategoryFinancialMetrics[];
+  categoryMetricsMap: Record<string, CategoryFinancialMetrics>;
+  gastosHormigaSpent: number;
+  gastosHormigaBudget: number;
+  gastosHormigaPercent: number;
+  gastosHormigaByType: Record<HormigaType, { count: number; amount: number }>;
+  budgetStatus: 'good' | 'warning' | 'over';
+  budgetStatusText: string;
 }
 
 export interface MonthData {

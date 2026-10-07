@@ -5,6 +5,7 @@ import {
   INITIAL_PREFERENCES,
   PAST_MONTHS_DATA,
 } from '../utils/initialData';
+import { reconcileMonthData } from '../utils/financeCalculations';
 
 const STORAGE_KEYS = {
   PREFERENCES: 'hormiga_user_prefs_v2',
@@ -25,7 +26,8 @@ export function useFinanceStorage() {
   const [monthData, setMonthData] = useState<MonthData>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.CURRENT_MONTH);
-      return stored ? JSON.parse(stored) : INITIAL_MONTH_DATA;
+      const data = stored ? JSON.parse(stored) : INITIAL_MONTH_DATA;
+      return reconcileMonthData(data);
     } catch {
       return INITIAL_MONTH_DATA;
     }
@@ -78,9 +80,9 @@ export function useFinanceStorage() {
     try {
       const parsed = JSON.parse(dataJson);
       if (parsed.monthData && parsed.preferences) {
-        setMonthData(parsed.monthData);
+        setMonthData(reconcileMonthData(parsed.monthData));
         setPreferences(parsed.preferences);
-        if (parsed.pastMonths) setPastMonths(parsed.pastMonths);
+        if (parsed.pastMonths) setPastMonths(parsed.pastMonths.map(reconcileMonthData));
         return true;
       }
       return false;

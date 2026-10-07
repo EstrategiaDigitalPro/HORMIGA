@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import {
   CategoryBudget,
+  CategoryFinancialMetrics,
   ExpenseTransaction,
   HormigaType,
   IncomeSource,
@@ -12,6 +13,7 @@ import {
 } from '../types/finance';
 import { useFinanceStorage } from '../hooks/useFinanceStorage';
 import {
+  calculateCentralFinances,
   calculateTotalIncome,
   calculateTotalSpent,
   calculateAvailableRemaining,
@@ -53,6 +55,7 @@ interface FinanceContextType {
   separateSavingsAmount: (amount: number) => void;
 
   updateCategoryBudget: (id: string, plannedAmount: number) => void;
+  updateAllBudgets: (budgets: CategoryBudget[]) => void;
   addCategoryBudget: (category: Omit<CategoryBudget, 'id'>) => void;
 
   togglePaymentPaid: (id: string) => void;
@@ -62,7 +65,7 @@ interface FinanceContextType {
   resetToInitialData: () => void;
   importUserData: (dataJson: string) => boolean;
 
-  // Calculated metrics
+  // Single central source of truth metrics
   totalIncome: number;
   savingsSeparated: number;
   savingsMonthlyTarget: number;
@@ -70,6 +73,9 @@ interface FinanceContextType {
   availableRemaining: number;
   totalBudget: number;
   budgetUsedPercent: number;
+
+  categoriesMetrics: CategoryFinancialMetrics[];
+  categoryMetricsMap: Record<string, CategoryFinancialMetrics>;
 
   gastosHormigaSpent: number;
   gastosHormigaBudget: number;
@@ -125,10 +131,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const deleteExpense = (id: string) => {
-    setMonthData((prev) => ({
-      ...prev,
-      expenses: prev.expenses.filter((e) => e.id !== id),
-    }));
+    setMonthData((prev) => {
+      const expToDelete = prev.expenses.find((e) => e.id === id);
+      const linkedPaymentId =
+        expToDelete?.paymentId || (id.startsWith('exp_pay_') ? id.replace('exp_pay_', '') : null);
+
+      return {
+        ...prev,
+        expenses: prev.expenses.filter((e) => e.id !== id),
+        // Si el gasto estaba vinculado a un pago pendiente, desmarcar el pago de manera coherente
+        payments: linkedPaymentId
+          ? prev.payments.map((p) =>
+              p.id === linkedPaymentId ? { ...p, isPaid: false, paidDate: undefined } : p
+            )
+          : prev.payments,
+      };
+    });
   };
 
   const updateExpense = (id: string, updates: Partial<ExpenseTransaction>) => {
@@ -192,7 +210,19 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const updateCategoryBudget = (id: string, plannedAmount: number) => {
     setMonthData((prev) => ({
       ...prev,
-      budgets: prev.budgets.map((b) => (b.id === id ? { ...b, plannedAmount } : b)),
+      budgets: prev.budgets.map((b) =>
+        b.id === id ? { ...b, plannedAmount: Math.max(0, plannedAmount) } : b
+      ),
+    }));
+  };
+
+  const updateAllBudgets = (budgets: CategoryBudget[]) => {
+    setMonthData((prev) => ({
+      ...prev,
+      budgets: budgets.map((b) => ({
+        ...b,
+        plannedAmount: Math.max(0, Number(b.plannedAmount) || 0),
+      })),
     }));
   };
 
@@ -200,6 +230,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newCat: CategoryBudget = {
       ...category,
       id: `cat_${Date.now()}`,
+      plannedAmount: Math.max(0, Number(category.plannedAmount) || 0),
     };
     setMonthData((prev) => ({
       ...prev,
@@ -208,6 +239,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Recurring Payments mutations
+  // Regla 4:
+  // Cuando un pago pendiente se marca como "Pagado":
+  // - cambia su estado a pagado;
+  // - genera o activa UN ÚNICO movimiento financiero;
+  // - ese movimiento debe reflejarse automáticamente en Mi Mes, Presupuesto y Análisis;
+  // - nunca debe duplicarse;
+  // - si ya existe un movimiento asociado a ese pago, NO crear otro.
   const togglePaymentPaid = (id: string) => {
     setMonthData((prev) => {
       const targetPayment = prev.payments.find((p) => p.id === id);
@@ -218,12 +256,23 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       let updatedExpenses = [...prev.expenses];
 
       if (newIsPaid) {
-        const existingExp = updatedExpenses.find((e) => e.description.includes(targetPayment.name));
+        // Verificar si ya existe un movimiento asociado a este pago
+        const existingExp = updatedExpenses.find(
+          (e) =>
+            e.paymentId === targetPayment.id ||
+            e.id === `exp_pay_${targetPayment.id}` ||
+            e.description?.toLowerCase().trim() === `pago: ${targetPayment.name}`.toLowerCase().trim() ||
+            (e.description?.toLowerCase().trim() === targetPayment.name.toLowerCase().trim() &&
+              Math.abs((Number(e.amount) || 0) - (Number(targetPayment.amount) || 0)) < 0.01)
+        );
+
         if (!existingExp) {
+          // Generar UN ÚNICO movimiento financiero
           updatedExpenses = [
             {
               id: `exp_pay_${targetPayment.id}`,
-              amount: targetPayment.amount,
+              paymentId: targetPayment.id,
+              amount: Number(targetPayment.amount) || 0,
               category: targetPayment.category,
               description: `Pago: ${targetPayment.name}`,
               isHormiga: false,
@@ -232,9 +281,27 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
             },
             ...updatedExpenses,
           ];
+        } else {
+          // Si ya existía, asegurarse de que quede vinculado con paymentId y no crear otro
+          updatedExpenses = updatedExpenses.map((e) =>
+            e.id === existingExp.id
+              ? {
+                  ...e,
+                  paymentId: targetPayment.id,
+                  amount: Number(targetPayment.amount) || 0,
+                  category: targetPayment.category,
+                }
+              : e
+          );
         }
       } else {
-        updatedExpenses = updatedExpenses.filter((e) => e.id !== `exp_pay_${targetPayment.id}`);
+        // Al desmarcar como pendiente, revertir el movimiento asociado para que no se cuente como gasto real
+        updatedExpenses = updatedExpenses.filter(
+          (e) =>
+            e.paymentId !== targetPayment.id &&
+            e.id !== `exp_pay_${targetPayment.id}` &&
+            e.description !== `Pago: ${targetPayment.name}`
+        );
       }
 
       return {
@@ -268,55 +335,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setMonthData((prev) => ({
       ...prev,
       payments: prev.payments.filter((p) => p.id !== id),
+      expenses: prev.expenses.filter(
+        (e) => e.paymentId !== id && e.id !== `exp_pay_${id}` && e.description !== `Pago: ${prev.payments.find(p => p.id === id)?.name}`
+      ),
     }));
   };
 
-  // Calculated Financial Metrics (Pure computation delegating to utility functions)
-  const totalIncome = useMemo(() => calculateTotalIncome(monthData.incomes), [monthData.incomes]);
-  const savingsSeparated = monthData.savings?.separatedAmount || 0;
-  const savingsMonthlyTarget = monthData.savings?.monthlyTarget || 0;
-  const totalSpent = useMemo(() => calculateTotalSpent(monthData.expenses), [monthData.expenses]);
-
-  const availableRemaining = useMemo(
-    () => calculateAvailableRemaining(totalIncome, savingsSeparated, totalSpent),
-    [totalIncome, savingsSeparated, totalSpent]
-  );
-
-  const totalBudget = useMemo(() => calculateTotalBudget(monthData.budgets), [monthData.budgets]);
-  const budgetUsedPercent = useMemo(
-    () => calculateBudgetUsedPercent(totalSpent, totalBudget),
-    [totalSpent, totalBudget]
-  );
-
-  const gastosHormigaSpent = useMemo(
-    () => calculateGastosHormigaSpent(monthData.expenses),
-    [monthData.expenses]
-  );
-
-  const gastosHormigaBudget = useMemo(
-    () => calculateGastosHormigaBudget(monthData.budgets),
-    [monthData.budgets]
-  );
-
-  const gastosHormigaPercent = useMemo(
-    () => calculateGastosHormigaPercent(gastosHormigaSpent, gastosHormigaBudget),
-    [gastosHormigaSpent, gastosHormigaBudget]
-  );
-
-  const gastosHormigaByType = useMemo(
-    () => calculateGastosHormigaByType(monthData.expenses),
-    [monthData.expenses]
-  );
-
-  const paymentsMetrics = useMemo(
-    () => calculatePaymentsMetrics(monthData.payments),
-    [monthData.payments]
-  );
-
-  const { status: budgetStatus, text: budgetStatusText } = useMemo(
-    () => determineBudgetStatus(availableRemaining, totalBudget, totalSpent, budgetUsedPercent),
-    [availableRemaining, totalBudget, totalSpent, budgetUsedPercent]
-  );
+  // Única fuente de verdad central para todos los cálculos financieros
+  const centralFinances = useMemo(() => calculateCentralFinances(monthData), [monthData]);
 
   return (
     <FinanceContext.Provider
@@ -341,28 +367,37 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateSavingsGoal,
         separateSavingsAmount,
         updateCategoryBudget,
+        updateAllBudgets,
         addCategoryBudget,
         togglePaymentPaid,
         addPayment,
         deletePayment,
         resetToInitialData,
         importUserData,
-        totalIncome,
-        savingsSeparated,
-        savingsMonthlyTarget,
-        totalSpent,
-        availableRemaining,
-        totalBudget,
-        budgetUsedPercent,
-        gastosHormigaSpent,
-        gastosHormigaBudget,
-        gastosHormigaPercent,
-        gastosHormigaByType,
-        completedPaymentsCount: paymentsMetrics.completedCount,
-        pendingPaymentsCount: paymentsMetrics.pendingCount,
-        pendingPaymentsAmount: paymentsMetrics.pendingAmount,
-        budgetStatus,
-        budgetStatusText,
+
+        // Métricas calculadas centralizadas
+        totalIncome: centralFinances.totalIncome,
+        savingsSeparated: centralFinances.savingsSeparated,
+        savingsMonthlyTarget: centralFinances.savingsMonthlyTarget,
+        totalSpent: centralFinances.totalSpent,
+        availableRemaining: centralFinances.availableRemaining,
+        totalBudget: centralFinances.totalBudget,
+        budgetUsedPercent: centralFinances.budgetUsedPercent,
+
+        categoriesMetrics: centralFinances.categoriesMetrics,
+        categoryMetricsMap: centralFinances.categoryMetricsMap,
+
+        gastosHormigaSpent: centralFinances.gastosHormigaSpent,
+        gastosHormigaBudget: centralFinances.gastosHormigaBudget,
+        gastosHormigaPercent: centralFinances.gastosHormigaPercent,
+        gastosHormigaByType: centralFinances.gastosHormigaByType,
+
+        completedPaymentsCount: centralFinances.completedPaymentsCount,
+        pendingPaymentsCount: centralFinances.pendingPaymentsCount,
+        pendingPaymentsAmount: centralFinances.pendingPaymentsAmount,
+
+        budgetStatus: centralFinances.budgetStatus,
+        budgetStatusText: centralFinances.budgetStatusText,
       }}
     >
       {children}
@@ -376,4 +411,19 @@ export const useFinance = () => {
     throw new Error('useFinance must be used within a FinanceProvider');
   }
   return context;
+};
+
+// Re-export pure helpers for backwards compatibility
+export {
+  calculateTotalIncome,
+  calculateTotalSpent,
+  calculateAvailableRemaining,
+  calculateTotalBudget,
+  calculateBudgetUsedPercent,
+  calculateGastosHormigaSpent,
+  calculateGastosHormigaBudget,
+  calculateGastosHormigaPercent,
+  calculateGastosHormigaByType,
+  calculatePaymentsMetrics,
+  determineBudgetStatus,
 };
